@@ -1,5 +1,7 @@
 import java.util.Scanner;
 import java.util.PriorityQueue;
+import java.time.LocalDate;
+import java.util.ArrayList;
 
 public class Principal {
     static Scanner leer = new Scanner(System.in);
@@ -32,6 +34,7 @@ public class Principal {
             System.out.println("2. Consultar Inventario Completo");
             System.out.println("3. Ver Pedidos de Reabastecimiento (Urgentes)");
             System.out.println("4. Simulador de Ventas");
+            System.out.println("6. Predicción de Demanda");
             System.out.println("5. Salir");
             
             try {
@@ -57,6 +60,9 @@ public class Principal {
                     // cómo el Monitor 4K o la Tablet Pro pasan a ser CRÍTICOS automáticamente.
                     break;
                     case 5:
+                        analizarDemanda();
+                        break;    
+                    case 6:
                         salir = true;
                         break;
                     default:
@@ -78,6 +84,11 @@ public class Principal {
         System.out.print("Ingrese el ID del producto: ");
         int idBuscado = leer.nextInt();
 
+        System.out.print("Ingrese fecha de la venta (YYYY-MM-DD): ");
+        String fechaTexto = leer.next();
+
+        LocalDate fecha = LocalDate.parse(fechaTexto);
+
         Producto productoEncontrado = inventario.buscarProducto(categoriaDigitada, idBuscado);
 
         if (productoEncontrado != null) {
@@ -95,7 +106,7 @@ public class Principal {
                 int existenciaPrevia = productoEncontrado.getStockActual();
 
                 // Pasamos la cantidad elegida al módulo de ventas
-                moduloVentas.realizarVenta(productoEncontrado, cantidadAVender);
+                moduloVentas.realizarVenta(productoEncontrado, cantidadAVender, fecha);
 
                 System.out.println("✅ Venta exitosa. Stock actualizado: " + productoEncontrado.getStockActual());
 
@@ -129,5 +140,45 @@ public class Principal {
             Producto urgente = colaPrioridad.poll(); 
             System.out.println("[URGENTE] " + urgente);
         }
+    }
+    private static void analizarDemanda() {
+        System.out.print("Ingrese categoría: ");
+        String cat = leer.next();
+        System.out.print("Ingrese ID del producto: ");
+        int id = leer.nextInt();
+        System.out.print("Ingrese el periodo (cantidad de registros): "); //cantidad de registros para analizar
+        int periodo = leer.nextInt();
+
+        Producto productoEncontrado = inventario.buscarProducto(cat, id);
+
+        if (productoEncontrado == null) {
+            System.out.println("Producto no encontrado");
+            return;
+        }
+        ArrayList<Ventas.RegistroVenta> ventas = moduloVentas.getHistorialVentas();
+        
+       // Filtrar solo las ventas del producto ingresado
+        ArrayList<Ventas.RegistroVenta> ventasProducto = new ArrayList<>();
+        for (Ventas.RegistroVenta rv : ventas) {
+            if (rv.getProducto().getId() == productoEncontrado.getId()) {
+                //Guarda ventas válidas relacionadas al producto buscado
+                ventasProducto.add(rv);
+            }
+        }
+        if (ventasProducto.size() < 2) {
+            System.out.println("No hay suficientes datos para análisis.");
+            return;
+        }
+         
+        double promedio = PrediccionDemanda.promedioMovil(ventasProducto, periodo);
+        double prediccion = PrediccionDemanda.regresionLineal(ventasProducto, periodo);
+        String tendencia = PrediccionDemanda.tendencia(ventasProducto, periodo);
+        
+        PrediccionDemanda.imprimirVentasCompletas(ventasProducto);
+
+        System.out.println("\n--- ANÁLISIS DE DEMANDA ---");
+        System.out.println("Promedio móvil: " + Math.round(promedio));
+        System.out.println("Predicción siguiente periodo: " + Math.round(prediccion));
+        System.out.println("Tendencia: " + tendencia);
     }
 }
