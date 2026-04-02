@@ -6,15 +6,22 @@ public class Principal {
     private static Inventario inventario = new Inventario();
     private static PriorityQueue<Producto> colaPrioridad = new PriorityQueue<>();
     private static Ventas moduloVentas = new Ventas();
+    private static MotorSimulacion motorSimulacion = new MotorSimulacion(inventario, moduloVentas);
     
     public static void main(String[] args) {
         boolean salir = false;
         int opcion; 
         
-        // 1. Carga inicial de prueba (Asegúrate de que los IDs sean únicos)
-        inventario.agregarProducto(new Producto(50, "Laptop Gaming", "Tecnologia", 2, 5, 750.0, 10.0, 15.0));
+        // 1. Carga de productos en inventario
+        // Categoría: Tecnologia
+        inventario.agregarProducto(new Producto(50, "Laptop Gaming", "Tecnologia", 2, 5, 750.0, 10.0, 15.0)); // Ya nace en CRÍTICO
+        inventario.agregarProducto(new Producto(60, "Monitor 4K", "Tecnologia", 15, 5, 300.0, 20.0, 25.0));   // Stock saludable
+        inventario.agregarProducto(new Producto(70, "Tablet Pro", "Tecnologia", 6, 5, 500.0, 15.0, 10.0));    // Al borde del crítico
+
+        // Categoría: Perifericos
         inventario.agregarProducto(new Producto(10, "Mouse Optico", "Perifericos", 20, 10, 25.0, 12.0, 18.0));
-        inventario.agregarProducto(new Producto(30, "Teclado Mecanico", "Perifericos", 3, 5, 80.0, 12.5, 18.5));
+        inventario.agregarProducto(new Producto(30, "Teclado Mecanico", "Perifericos", 3, 5, 80.0, 12.5, 18.5)); // Ya nace en CRÍTICO
+        inventario.agregarProducto(new Producto(40, "Audifonos Pro", "Perifericos", 12, 10, 150.0, 13.0, 19.0));
 
         // 2. Sincronización inicial de la cola de prioridad
         inventario.actualizarPedidosUrgentes(colaPrioridad);
@@ -24,7 +31,7 @@ public class Principal {
             System.out.println("1. Registrar Venta");
             System.out.println("2. Consultar Inventario Completo");
             System.out.println("3. Ver Pedidos de Reabastecimiento (Urgentes)");
-            System.out.println("4. Calcular Ruta de Distribucion (Proximamente)");
+            System.out.println("4. Simulador de Ventas");
             System.out.println("5. Salir");
             
             try {
@@ -42,8 +49,13 @@ public class Principal {
                         verPedidosUrgentes();
                         break;
                     case 4:
-                        System.out.println("Modulo de Logistica en desarrollo para el viernes...");
-                        break;
+                    System.out.println("Ejecutando Simulación de Alta Demanda para 'Tecnologia'...");
+                    // IDs que sabemos que existen en esa categoría
+                    int[] idsSimulacion = {50, 60, 70}; 
+                    motorSimulacion.ejecutarSimulacion("Tecnologia", idsSimulacion, 8); // 8 ventas aleatorias
+                    // Al final, el motor llamará a la auditoría que planeamos y verás
+                    // cómo el Monitor 4K o la Tablet Pro pasan a ser CRÍTICOS automáticamente.
+                    break;
                     case 5:
                         salir = true;
                         break;
