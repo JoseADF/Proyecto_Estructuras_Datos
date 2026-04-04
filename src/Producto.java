@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 
 public class Producto implements Comparable<Producto> {
     private int id;
@@ -6,6 +7,7 @@ public class Producto implements Comparable<Producto> {
     private int stockActual;
     private int stockMinimo; // Para manejo de cola de prioridad por nivel crítico.
     private double precio;
+    private ArrayList<Integer> historialVentas = new ArrayList<>();
     
     // Atributos para el Grafo (Clase Logistica y reabesticimiento)
     private double coordX; 
@@ -30,6 +32,10 @@ public class Producto implements Comparable<Producto> {
         }
     }
 
+    //Registro de ventas
+    public void registrarVenta(int cantidad) {
+        historialVentas.add(cantidad);
+    }
     // Se encarga de verificar si el producto cuenta con prioridad para ser reabestecido.
     public boolean esCritico() {
         return this.stockActual <= this.stockMinimo;
@@ -43,6 +49,8 @@ public class Producto implements Comparable<Producto> {
     public void setStockActual(int stock) { this.stockActual = stock; }
     public double getCoordX() { return coordX; }
     public double getCoordY() { return coordY; }
+    public ArrayList<Integer> getHistorialVentas() {return historialVentas;}
+
     
     @Override
     public String toString() {
